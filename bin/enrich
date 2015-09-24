@@ -1,0 +1,138 @@
+#!/bin/bash
+
+# TODO make multi-field joins possible
+
+show_help() {
+  echo ""
+  echo "USAGE: $0 [-h] -l lookup-file -k lookup-key -d data-key [-c columns]"
+  echo ""
+  echo "  l lookup-file : The csv file to use as the lookup file"
+  echo "  d data-key    : The column in the input data to look up in the lookup file"
+  echo "  k lookup-key  : The column in the lookup file to match against the data key"
+  echo "  c columns     : The columns from the lookup file to add to the data (default is all)"
+  echo "  h             : print this help text"
+  echo ""
+}
+
+LOOKUP_FILE_KEY=""
+LOOKUP_FILE=""
+DATA_FILE_KEY=""
+while getopts "hk:l:d:c:" opt
+do
+  case "$opt" in
+    h)
+      show_help
+      exit 0
+      ;;
+    k) LOOKUP_FILE_KEY="$OPTARG"
+      ;;
+    l) LOOKUP_FILE="$OPTARG"
+      ;;
+    d) DATA_FILE_KEY="$OPTARG"
+      ;;
+    c) COLUMNS="$OPTARG"
+  esac
+done
+shift $((OPTIND-1))
+
+if [ "$LOOKUP_FILE_KEY" == "" ]
+then
+  >&2 echo "ERROR: Missing mandatory argument -k"
+  >&2 show_help
+  exit 1
+fi
+
+if [ "$DATA_FILE_KEY" == "" ]
+then
+  >&2 echo "ERROR: Missing mandatory argument -d"
+  >&2 show_help
+  exit 1
+fi
+
+if [ "$LOOKUP_FILE" == "" ]
+then
+  >&2 echo "ERROR: Missing mandatory argument -l"
+  >&2 show_help
+  exit 1
+fi
+ENRICHMENT_COLUMNS=${COLUMNS:-`head -n 1 $LOOKUP_FILE`}
+
+awk -F ',' -v lookupFileKey=$LOOKUP_FILE_KEY -v dataFileKey=$DATA_FILE_KEY -v columns=$ENRICHMENT_COLUMNS '
+BEGIN {
+  # parse "columns" into an array of column names/aliases to use
+  numEnrichmentCols = split(columns,enrichmentColumns)
+  for (i=1; i<=numEnrichmentCols; i++) {
+    n = split(enrichmentColumns[i], parts, "=")
+    enrichmentCols[i] = parts[1]
+    enrichmentOrder[parts[1]] = i
+    if (n == 2) {
+      enrichmentAliases[i] = parts[2]
+    } else {
+      enrichmentAliases[i] = parts[1]
+    }
+  }
+}
+
+FNR==1 {
+  if (FNR == NR) {
+    # find the column to use as the lookup column
+    for (i=1; i<=NF; i++) {
+      if ($i == lookupFileKey) {
+        lookupFileColumn=i
+      }
+    }
+
+    # find the indexes to enrich with
+    for (i=1; i<=NF; i++) {
+      if ($i in enrichmentOrder) {
+        enrichmentIndexes[enrichmentOrder[$i]] = i
+      }
+    }
+
+  } else {
+    # find the column index to lookup
+    for (i=1; i<=NF; i++) {
+      if ($i == dataFileKey) {
+        dataFileColumn=i
+      }
+    }
+
+    # print all the data file headers except the one used in the lookup
+    for (n=1; n<=NF; n++) {
+      if (n != dataFileColumn) {
+        printf("%s%c", $n, FS)
+      }
+    }
+
+    # print all the enrichment headers
+    sep=""
+    for (i=1; i<=numEnrichmentCols; i++) {
+      printf("%c%s", sep, enrichmentAliases[i])
+      sep=FS
+    }
+    print ""
+  }
+}
+
+FNR!=1 {
+  if (FNR == NR) {
+    enrichmentLines[$lookupFileColumn]=$0 
+  } else {
+    # print all the data file fields except the one used in the lookup
+    for (n=1; n<=NF; n++) {
+      if (n != dataFileColumn) {
+        printf("%s%c", $n, FS)
+      }
+    }
+
+    # print all the enrichment fields
+    split(enrichmentLines[$dataFileColumn], enrichmentFields, FS)
+    sep=""
+    for (n=1; n<=numEnrichmentCols; n++) {
+      printf("%c%s", sep, enrichmentFields[enrichmentIndexes[n]])
+      sep=FS
+    }
+    print ""
+  }
+}
+' $LOOKUP_FILE -
