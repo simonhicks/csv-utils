@@ -31,6 +31,7 @@ do
     d) DATA_FILE_KEY="$OPTARG"
       ;;
     c) COLUMNS="$OPTARG"
+      ;;
   esac
 done
 shift $((OPTIND-1))
