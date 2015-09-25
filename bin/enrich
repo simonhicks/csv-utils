@@ -56,7 +56,9 @@ then
   >&2 show_help
   exit 1
 fi
-ENRICHMENT_COLUMNS=${COLUMNS:-`head -n 1 $LOOKUP_FILE`}
+LOOKUP_TABLE_NAME=`basename $LOOKUP_FILE .csv`
+ENRICHMENT_COLUMNS=${COLUMNS:-`head -n 1 $LOOKUP_FILE | sed "s/\([^,]*\)/\1=${LOOKUP_TABLE_NAME}_\1/g"`}
+
 
 awk -F ',' -v lookupFileKey=$LOOKUP_FILE_KEY -v dataFileKey=$DATA_FILE_KEY -v columns=$ENRICHMENT_COLUMNS '
 BEGIN {
