@@ -2,7 +2,7 @@
 
 show_help() {
   echo ""
-  echo "USAGE: $0 [-h] [-g group-by-col]"
+  echo "USAGE: $0 [-h] -g group-by-col"
   echo ""
   echo "  g group-by-col : group the count by this column"
   echo "  h              : print this help text"
@@ -23,8 +23,14 @@ do
 done
 shift $((OPTIND-1))
 
-function do-count() {
-  awk -v header=${GROUP_BY_COL} '
+if [ "$GROUP_BY_COL" == "" ]
+then
+  >&2 echo "ERROR: Missing mandatory argument -g"
+  >&2 show_help
+  exit 1
+fi
+
+$(dirname $0)/columns $GROUP_BY_COL | awk -v header=${GROUP_BY_COL} '
 NR==1 {
   if (header=="") {
     header=$0
@@ -42,11 +48,3 @@ END {
     print("")
   }
 }' -
-}
-
-if [ "$GROUP_BY_COL" != "" ]
-then
-  $(dirname $0)/columns $GROUP_BY_COL | do-count
-else
-  do-count
-fi
