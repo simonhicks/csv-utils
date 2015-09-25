@@ -2,10 +2,10 @@
 
 show_help() {
   echo ""
-  echo "USAGE: $0 [-h] cols"
+  echo "USAGE: $(basename $0) [-h] cols"
   echo ""
   echo "  cols : a comma seperated list of the columns to keep. You can also alias"
-  echo "         columns using old-name=new-name, so '$0 id,film,date=release-date'"
+  echo "         columns using old-name=new-name, so '$(basename $0) id,film,date=release-date'"
   echo "         would select columns id, film & date, aliasing date -> release-date"
   echo "  h    : show this help text"
   echo ""

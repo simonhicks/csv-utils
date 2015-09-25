@@ -4,7 +4,7 @@
 
 show_help() {
   echo ""
-  echo "USAGE: $0 [-h] -l lookup-file -k lookup-key -d data-key [-c columns]"
+  echo "USAGE: $(basename $0) [-h] -l lookup-file -k lookup-key -d data-key [-c columns]"
   echo ""
   echo "  l lookup-file : The csv file to use as the lookup file"
   echo "  d data-key    : The column in the input data to look up in the lookup file"

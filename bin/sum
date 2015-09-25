@@ -2,7 +2,7 @@
 
 show_help() {
   echo ""
-  echo "USAGE: $0 [-h] [-g group-by-col] -s sum-col"
+  echo "USAGE: $(basename $0) [-h] [-g group-by-col] -s sum-col"
   echo ""
   echo "  s sum-col      : the column to sum"
   echo "  g group-by-col : group the sum by this column"

@@ -2,7 +2,7 @@
 
 show_help() {
   echo ""
-  echo "USAGE: $0 [-h] -g group-by-col"
+  echo "USAGE: $(basename $0) [-h] -g group-by-col"
   echo ""
   echo "  g group-by-col : group the count by this column"
   echo "  h              : print this help text"
