@@ -9,7 +9,8 @@ show_help() {
   echo "  l lookup-file : The csv file to use as the lookup file"
   echo "  d data-key    : The column in the input data to look up in the lookup file"
   echo "  k lookup-key  : The column in the lookup file to match against the data key"
-  echo "  c columns     : The columns from the lookup file to add to the data (default is all)"
+  echo "  c columns     : The columns from the lookup file to add to the data (default"
+  echo "                  is all). You can also alias columns using old-name=new-name."
   echo "  h             : print this help text"
   echo ""
 }

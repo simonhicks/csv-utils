@@ -4,7 +4,9 @@ show_help() {
   echo ""
   echo "USAGE: $0 [-h] cols"
   echo ""
-  echo "  cols : a comma seperated list of the columns to keep"
+  echo "  cols : a comma seperated list of the columns to keep. You can also alias"
+  echo "         columns using old-name=new-name, so '$0 id,film,date=release-date'"
+  echo "         would select columns id, film & date, aliasing date -> release-date"
   echo "  h    : show this help text"
 }
 
@@ -30,8 +32,14 @@ awk -F, -v cols="$1" '
 BEGIN {
   numberOfColumns = split(cols, columns)
   for (i=1; i<=numberOfColumns ; i++) {
-    column = columns[i]
-    outputIndex[column] = i
+    n = split(columns[i], parts, "=")
+    columnName = parts[1]
+    outputIndex[columnName] = i
+    if (n == 2) {
+      headers[i] = parts[2]
+    } else {
+      headers[i] = columnName
+    }
   }
 }
 NR==1 {
@@ -40,8 +48,14 @@ NR==1 {
       inputIndex[outputIndex[$f]] = f
     }
   }
+  sep = ""
+  for (f=1; f<=numberOfColumns; f++) {
+    printf("%c%s", sep, headers[f])
+    sep=","
+  }
+  print ""
 }
-{
+NR!=1{
   sep = ""
   for (f=1; f<=numberOfColumns; f++) {
     printf("%c%s", sep, $inputIndex[f])
