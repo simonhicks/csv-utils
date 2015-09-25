@@ -13,16 +13,16 @@ first 10 rows look like this:
 
 date     | location | film | format | amount
 --------------------------------------------
-20150908 | Tokyo  | 78 | mp4    | 16.99
-20150909 | Tokyo  | 26 | mp4    | 15.99
-20150901 | Berlin | 99 | BluRay | 15.99
-20150912 | London | 93 | DVD    | 14.99
-20150912 | Berlin | 51 | HDDVD  | 14.99
-20150903 | London | 6  | VCR    | 15.99
-20150918 | NYC    | 1  | VCR    | 17.99
-20150930 | Tokyo  | 55 | VCR    | 17.99
-20150913 | Berlin | 78 | DVD    | 16.99
-20150917 | Tokyo  | 33 | BluRay | 16.99
+20150908 | Tokyo    | 78   | mp4    | 16.99
+20150909 | Tokyo    | 26   | mp4    | 15.99
+20150901 | Berlin   | 99   | BluRay | 15.99
+20150912 | London   | 93   | DVD    | 14.99
+20150912 | Berlin   | 51   | HDDVD  | 14.99
+20150903 | London   | 6    | VCR    | 15.99
+20150918 | NYC      | 1    | VCR    | 17.99
+20150930 | Tokyo    | 55   | VCR    | 17.99
+20150913 | Berlin   | 78   | DVD    | 16.99
+20150917 | Tokyo    | 33   | BluRay | 16.99
 
 
 ### titles.csv
@@ -50,7 +50,7 @@ id | title                          | date     | studio                         
 This is the most simple of all of the scripts. It lays things out in a neat table:
 
 ```
-$ head -n 11 sales.csv | table
+$ cat sales.csv | table
 date      location  film  format  amount
 20150908  Tokyo     78    mp4     16.99
 20150909  Tokyo     26    mp4     15.99
@@ -67,12 +67,13 @@ date      location  film  format  amount
 The remainder of these examples are all displayed using this script because it's easier to see
 what's going on that way. If the `table` was removed from the end of any of these commands, then the
 data would just look like a regular csv.
+
 ### `columns`
 
 This is used to limit output to specific columns, renaming them if necessary:
 
 ```
-$ head -n 11 sales.csv | columns date,film=film-id,amount=price | table
+$ cat sales.csv | columns date,film=film-id,amount=price | table
 date      film-id  price
 20150908  78       16.99
 20150909  26       15.99
@@ -89,12 +90,11 @@ date      film-id  price
 ### `enrich`
 
 This is where things get interesting. This script is used to enrich one csv using values from
-another. In this case, we're going to add the extra info from titles.csv to each row in the sales
-data from sales.csv. In SQL, this would be joining sales to titles where sales.film is equal to
-title.id
+another. For the example, lets add the extra info from titles.csv to each row in the sales data from
+sales.csv. In SQL, this would be joining sales to titles where sales.film is equal to title.id
 
 ```
-$ head -n 11 sales.csv | enrich -l titles.csv -k id -d film | table
+$ cat sales.csv | enrich -l titles.csv -k id -d film | table
 date      location  format  amount  titles_id  titles_title                     titles_date titles_studio                     titles_price
 20150908  Tokyo     mp4     16.99   78         Up                               20090529     Pixar Animation Studios           16.99
 20150909  Tokyo     mp4     15.99   26         The Great Mouse Detective        19860702     Walt Disney                       15.99
@@ -106,14 +106,16 @@ date      location  format  amount  titles_id  titles_title                     
 20150930  Tokyo     VCR     17.99   55         Lilo & Stitch                    20020621     Walt Disney                       17.99
 20150913  Berlin    DVD     16.99   78         Up                               20090529     Pixar Animation Studios           16.99
 20150917  Tokyo     BluRay  16.99   33         Aladdin                          19921125     Walt Disney                       16.99
+...
 ```
 
 That's a lot of data though, and now the headers aren't so great. Fortunately, `enrich` can also
-selectively add columns and rename them using a similar syntax to `columns`. Lets enrich the sales
-data with just the movie title and the studio that produced that movie.
+selectively add only those columns you're interested in and can also rename them using a similar
+syntax to `columns`. Lets enrich the sales data with just the movie title and the studio that
+produced that movie.
 
 ```
-$ head -n 11 sales.csv | enrich -l titles.csv -k id -d film -c title=movie-title,studio | table
+$ cat sales.csv | enrich -l titles.csv -k id -d film -c title=movie-title,studio | table
 date      location  format  amount  movie-title                      studio
 20150908  Tokyo     mp4     16.99   Up                               Pixar Animation Studios
 20150909  Tokyo     mp4     15.99   The Great Mouse Detective        Walt Disney
@@ -125,6 +127,7 @@ date      location  format  amount  movie-title                      studio
 20150930  Tokyo     VCR     17.99   Lilo & Stitch                    Walt Disney
 20150913  Berlin    DVD     16.99   Up                               Pixar Animation Studios
 20150917  Tokyo     BluRay  16.99   Aladdin                          Walt Disney
+...
 ```
 
 ### `count-by`
