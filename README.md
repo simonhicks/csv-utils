@@ -233,6 +233,7 @@ these scripts handle escapes or quoting or anything like that yet.
 These are things I'm planning to do soon (roughly in order)
 
 - change count-by to count and make it handle both group-by and count unique
+- utilities for making one off queries on a file (e.g. show me all the headers in a readable format)
 - make the record separator configurable everywhere
 - a script that lets you process csvs with a quote char or with escaped record separators in the
   values (by systematically changing the separator, and removing the quotes)
