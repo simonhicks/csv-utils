@@ -1,0 +1,73 @@
+#!/bin/bash
+
+show_help() {
+  echo ""
+  echo "USAGE: $(basename $0) [-h] -s sort-by-col [-d direction]"
+  echo ""
+  echo "  s sort-by-col : sort the rows by this column"
+  echo "  d direction   : either 'asc' or 'desc' (default 'desc')"
+  echo "  h             : print this help text"
+  echo ""
+}
+
+DIRECTION="desc"
+GROUP_BY_COL=""
+while getopts "hs:d:" opt
+do
+  case "$opt" in
+    h)
+      show_help
+      exit 0
+      ;;
+    s) SORT_BY_COL="$OPTARG"
+      ;;
+    d) DIRECTION="$OPTARG"
+      ;;
+  esac
+done
+shift $((OPTIND-1))
+
+if [ "$SORT_BY_COL" == "" ]
+then
+  >&2 echo "ERROR: Missing mandatory argument -s"
+  >&2 show_help
+  exit 1
+fi
+
+if [ "$DIRECTION" == 'asc' ]
+then
+  D_FLAG=""
+elif [ "$DIRECTION" == 'desc' ]
+then
+  D_FLAG="-r"
+else
+  >&2 echo "ERROR: Invalid direction '$DIRECTION'"
+  >&2 show_help
+  exit 1
+fi
+
+read HEADERS
+
+OLD_IFS=$IFS
+IFS=,
+SORT_BY_INDEX=""
+i=1
+for HEADER in $HEADERS
+do
+  if [ "$HEADER" == "$SORT_BY_COL" ]
+  then
+    SORT_BY_INDEX=$i
+  fi
+  i=$((i+1))
+done;
+IFS=$OLD_IFS
+
+if [ "$SORT_BY_INDEX" == "" ]
+then
+  >&2 echo "ERROR: Invalid sort column $SORT_BY_COL"
+  >&2 show_help
+  exit 1
+fi
+
+echo $HEADERS
+sort $D_FLAG -t , -k $SORT_BY_INDEX -n -

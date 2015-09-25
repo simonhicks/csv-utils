@@ -1,0 +1,75 @@
+#!/bin/bash
+
+show_help() {
+  echo ""
+  echo "USAGE: $(basename $0) [-h] -c condition [-n]"
+  echo ""
+  echo "  c condition : the condition to use for filtering. This should take the form"
+  echo "                'number-column==1', 'string-column==\"foo\"' or 'column~/regex/'"
+  echo "                The supported operators are ~, ==, <, >, <= and >="
+  echo "  n           : remove the matching rows rather than keeping them"
+  echo "  h           : print this help text"
+  echo ""
+}
+
+NEGATE="no"
+CONDITION=""
+while getopts "hc:n" opt
+do
+  case "$opt" in
+    h)
+      show_help
+      exit 0
+      ;;
+    c) CONDITION="$OPTARG"
+      ;;
+    n) NEGATE="yes"
+      ;;
+  esac
+done
+shift $((OPTIND-1))
+
+if [ "$CONDITION" == "" ]
+then
+  >&2 echo "ERROR: Missing mandatory argument -c"
+  >&2 show_help
+  exit 1
+fi
+
+# get the part of $CONDITION before the operator
+CONDITION_COL=${CONDITION/[~=<>]*/}
+
+# find the index of that column
+read HEADERS
+
+OLD_IFS=$IFS
+IFS=,
+CONDITION_INDEX=""
+i=1
+for HEADER in $HEADERS
+do
+  if [ "$HEADER" == "$CONDITION_COL" ]
+  then
+    CONDITION_INDEX=$i
+  fi
+  i=$((i+1))
+done;
+IFS=$OLD_IFS
+
+if [ "$CONDITION_INDEX" == "" ]
+then
+  >&2 echo "ERROR: Invalid condition column $CONDITION"
+  >&2 show_help
+  exit 1
+fi
+
+# replace the first part of the $CONDITION with $n
+CONDITION=${CONDITION/$CONDITION_COL/\$$CONDITION_INDEX}
+
+echo $HEADERS
+
+awk -F, "{
+  if ($CONDITION) {
+    print \$0
+  }
+}" -

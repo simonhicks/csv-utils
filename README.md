@@ -167,6 +167,20 @@ Paris     34341.9
 NYC       34412.9
 ```
 
+### `sort-by`
+
+We can use `sort-by` to numerically sort this data to see which location is the most profitable.
+
+```
+$ cat test/sales.csv | enrich -l test-data/titles.csv -k id -d film -c title=movie-title,studio | sum -g location -s amount | sort-by -s sum-of-amount -d desc | table
+location  sum-of-amount
+Tokyo     34840.6
+NYC       34412.9
+Paris     34341.9
+London    33772.2
+Berlin    33544.4
+```
+
 ## Installation
 
 These are just bash scripts, so all you have to do is clone this repo and add the bin folder to your
@@ -174,15 +188,15 @@ These are just bash scripts, so all you have to do is clone this repo and add th
 
 ## Warning
 
-These are just awk scripts. They don't handle escapes or quoting or anything like that yet.
+The vast majority of this is just awk, without anything particularly clever being done. None of
+these scripts handle escapes or quoting or anything like that yet.
 
 ## TODO list
 
 These are things I'm planning to do soon (roughly in order)
 
-- a sort-by script which sorts by column names, leaving headers where they are.
-- a select script for selecting/filtering out rows that meet conditions like 'location=London' or
-  'amount>15.99'
+- make select ACTUALLY support -n
+- README entry for select
 - change count-by to count and make it handle both group-by and count unique
 - make the record separator configurable everywhere
 - a script that lets you process csvs with a quote char or with escaped record separators in the
