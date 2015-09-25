@@ -50,7 +50,7 @@ id | title                          | date     | studio                         
 This is the most simple of all of the scripts. It lays things out in a neat table:
 
 ```
-$ head -n 11 test-data/sales.csv | table
+$ head -n 11 sales.csv | table
 date      location  film  format  amount
 20150908  Tokyo     78    mp4     16.99
 20150909  Tokyo     26    mp4     15.99
@@ -72,7 +72,7 @@ data would just look like a regular csv.
 This is used to limit output to specific columns, renaming them if necessary:
 
 ```
-$ head -n 11 test-data/sales.csv | columns date,film=film-id,amount=price | table
+$ head -n 11 sales.csv | columns date,film=film-id,amount=price | table
 date      film-id  price
 20150908  78       16.99
 20150909  26       15.99
@@ -94,7 +94,7 @@ data from sales.csv. In SQL, this would be joining sales to titles where sales.f
 title.id
 
 ```
-$ head -n 11 test-data/sales.csv | enrich -l test-data/titles.csv -k id -d film | table
+$ head -n 11 sales.csv | enrich -l titles.csv -k id -d film | table
 date      location  format  amount  titles_id  titles_title                     titles_date titles_studio                     titles_price
 20150908  Tokyo     mp4     16.99   78         Up                               20090529     Pixar Animation Studios           16.99
 20150909  Tokyo     mp4     15.99   26         The Great Mouse Detective        19860702     Walt Disney                       15.99
@@ -113,7 +113,7 @@ selectively add columns and rename them using a similar syntax to `columns`. Let
 data with just the movie title and the studio that produced that movie.
 
 ```
-$ head -n 11 test-data/sales.csv | enrich -l test-data/titles.csv -k id -d film -c title=movie-title,studio | table
+$ head -n 11 sales.csv | enrich -l titles.csv -k id -d film -c title=movie-title,studio | table
 date      location  format  amount  movie-title                      studio
 20150908  Tokyo     mp4     16.99   Up                               Pixar Animation Studios
 20150909  Tokyo     mp4     15.99   The Great Mouse Detective        Walt Disney
@@ -133,7 +133,7 @@ Now that you've got some joined up data, you can start doing some simple analysi
 to see which studio is selling the most movies.
 
 ```
-$ cat test/sales.csv | enrich -l test-data/titles.csv -k id -d film -c title=movie-title,studio | count-by -g studio | table
+$ cat test/sales.csv | enrich -l titles.csv -k id -d film -c title=movie-title,studio | count-by -g studio | table
 studio                            count
                                   93
 ImageMovers Digital[st 6]         208
@@ -188,7 +188,7 @@ interested in the main Disney studios. You can use `filter` to filter results to
 that include the word "Disney".
 
 ```
-$ cat test/sales.csv | enrich -l test-data/titles.csv -k id -d film -c studio | count-by -g studio | filter -c 'studio~/.*Disney*./ | table
+$ cat test/sales.csv | enrich -l titles.csv -k id -d film -c studio | count-by -g studio | filter -c 'studio~/.*Disney*./ | table
 studio                            count
 DisneyToon Studios                1362
 Walt Disney Television Animation  311
@@ -199,7 +199,7 @@ Walt Disney                       5199
 which match the criteria by passing the `-n` flag.
 
 ```
-$ cat test/sales.csv | enrich -l test-data/titles.csv -k id -d film -c studio | count-by -g studio | filter -c 'studio~/.*Disney*./ | table
+$ cat test/sales.csv | enrich -l titles.csv -k id -d film -c studio | count-by -g studio | filter -c 'studio~/.*Disney*./ | table
 studio                      count
                             93
 ImageMovers Digital[st 6]   208
@@ -235,3 +235,4 @@ These are things I'm planning to do soon (roughly in order)
   values (by systematically changing the separator, and removing the quotes)
 - multi column matches in enrich
 - more visualisations (histogram, distribution, other?)
+- pivot table
