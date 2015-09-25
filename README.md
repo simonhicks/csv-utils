@@ -232,6 +232,7 @@ these scripts handle escapes or quoting or anything like that yet.
 
 These are things I'm planning to do soon (roughly in order)
 
+- change sum to aggregate and add support for other aggregations (eg. mean, max, min, etc.)
 - change count-by to count and make it handle both group-by and count unique
 - utilities for making one off queries on a file (e.g. show me all the headers in a readable format)
 - make the record separator configurable everywhere
