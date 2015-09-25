@@ -44,7 +44,12 @@ END {
   print("")
 
   for (line in counts) {
-    printf("%s,%s", line, counts[line])
-    print("")
+    if (line != "") {
+      printf("%s,%s", line, counts[line])
+      print("")
+    } else {
+      printf(" ,%s", counts[line])
+      print("")
+    }
   }
 }' -
