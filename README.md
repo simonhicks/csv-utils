@@ -129,7 +129,7 @@ date      location  format  amount  movie-title                      studio
 
 ### `count-by`
 
-Now that we've got some joined up data, we can start doing some simple analysis. We can use `count` by
+Now that you've got some joined up data, you can start doing some simple analysis. You can use `count` by
 to see which studio is selling the most movies.
 
 ```
@@ -154,11 +154,11 @@ Walt Disney                       5199
 
 ### `sum`
 
-We also might want to look at the distribution of revenue between the different locations. We can
+You also might want to look at the distribution of revenue between the different locations. You can
 use `sum` to see the total sales of each location.
 
 ```
-$ cat test/sales.csv | enrich -l test-data/titles.csv -k id -d film -c title=movie-title,studio | sum -g location -s amount | table
+$ cat test/sales.csv | sum -g location -s amount | table
 location  sum-of-amount
 Tokyo     34840.6
 Berlin    33544.4
@@ -169,16 +169,50 @@ NYC       34412.9
 
 ### `sort-by`
 
-We can use `sort-by` to numerically sort this data to see which location is the most profitable.
+You can use `sort-by` to numerically sort this data to see which location is the most profitable.
 
 ```
-$ cat test/sales.csv | enrich -l test-data/titles.csv -k id -d film -c title=movie-title,studio | sum -g location -s amount | sort-by -s sum-of-amount -d desc | table
+$ cat test/sales.csv | sum -g location -s amount | sort-by -s sum-of-amount -d desc | table
 location  sum-of-amount
 Tokyo     34840.6
 NYC       34412.9
 Paris     34341.9
 London    33772.2
 Berlin    33544.4
+```
+
+### `select`
+
+`select` is used to filter the rows based on some kind of condition. Lets say you're only
+interested in the main Disney studios. You can use `select` to filter results to only those rows
+that include the word "Disney".
+
+```
+$ cat test/sales.csv | enrich -l test-data/titles.csv -k id -d film -c studio | count-by -g studio | select -c 'studio~/.*Disney*./ | table
+studio                            count
+DisneyToon Studios                1362
+Walt Disney Television Animation  311
+Walt Disney                       5199
+```
+
+`select` also supports other comparisons like ==, >=, >, <= and <. You can also remove the rows
+which match the criteria by passing the `-n` flag.
+
+```
+$ cat test/sales.csv | enrich -l test-data/titles.csv -k id -d film -c studio | count-by -g studio | select -c 'studio~/.*Disney*./ | table
+studio                      count
+                            93
+ImageMovers Digital[st 6]   208
+Tim Burton[st 3]            97
+UTV Motion Pictures         119
+Yash Raj Films[st 5]        80
+Touchstone Pictures [st 2]  92
+Pixar Animation Studios     1371
+Touchstone Pictures         217
+Vanguard Animation          91
+Skellington [st 3]          89
+Studio Ghibli               565
+C.O.R.E.[st 4]              106
 ```
 
 ## Installation
@@ -195,8 +229,6 @@ these scripts handle escapes or quoting or anything like that yet.
 
 These are things I'm planning to do soon (roughly in order)
 
-- make select ACTUALLY support -n
-- README entry for select
 - change count-by to count and make it handle both group-by and count unique
 - make the record separator configurable everywhere
 - a script that lets you process csvs with a quote char or with escaped record separators in the
