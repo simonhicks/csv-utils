@@ -1,0 +1,52 @@
+#!/bin/bash
+
+show_help() {
+  echo ""
+  echo "USAGE: $0 [-h] [-g group-by-col]"
+  echo ""
+  echo "  g group-by-col : group the count by this column"
+  echo "  h              : print this help text"
+  echo ""
+}
+
+GROUP_BY_COL=""
+while getopts "hg:" opt
+do
+  case "$opt" in
+    h)
+      show_help
+      exit 0
+      ;;
+    g) GROUP_BY_COL="$OPTARG"
+      ;;
+  esac
+done
+shift $((OPTIND-1))
+
+function do-count() {
+  awk -v header=${GROUP_BY_COL} '
+NR==1 {
+  if (header=="") {
+    header=$0
+  }
+}
+NR!=1 {
+  counts[$0]+=1
+}
+END {
+  printf("%s,%s", header, "count")
+  print("")
+
+  for (line in counts) {
+    printf("%s,%s", line, counts[line])
+    print("")
+  }
+}' -
+}
+
+if [ "$GROUP_BY_COL" != "" ]
+then
+  $(dirname $0)/columns $GROUP_BY_COL | do-count
+else
+  do-count
+fi
