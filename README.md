@@ -181,25 +181,25 @@ London    33772.2
 Berlin    33544.4
 ```
 
-### `select`
+### `filter`
 
-`select` is used to filter the rows based on some kind of condition. Lets say you're only
-interested in the main Disney studios. You can use `select` to filter results to only those rows
+`filter` is used to filter the rows based on some kind of condition. Lets say you're only
+interested in the main Disney studios. You can use `filter` to filter results to only those rows
 that include the word "Disney".
 
 ```
-$ cat test/sales.csv | enrich -l test-data/titles.csv -k id -d film -c studio | count-by -g studio | select -c 'studio~/.*Disney*./ | table
+$ cat test/sales.csv | enrich -l test-data/titles.csv -k id -d film -c studio | count-by -g studio | filter -c 'studio~/.*Disney*./ | table
 studio                            count
 DisneyToon Studios                1362
 Walt Disney Television Animation  311
 Walt Disney                       5199
 ```
 
-`select` also supports other comparisons like ==, >=, >, <= and <. You can also remove the rows
+`filter` also supports other comparisons like ==, >=, >, <= and <. You can also remove the rows
 which match the criteria by passing the `-n` flag.
 
 ```
-$ cat test/sales.csv | enrich -l test-data/titles.csv -k id -d film -c studio | count-by -g studio | select -c 'studio~/.*Disney*./ | table
+$ cat test/sales.csv | enrich -l test-data/titles.csv -k id -d film -c studio | count-by -g studio | filter -c 'studio~/.*Disney*./ | table
 studio                      count
                             93
 ImageMovers Digital[st 6]   208
