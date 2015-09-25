@@ -8,6 +8,7 @@ show_help() {
   echo "         columns using old-name=new-name, so '$0 id,film,date=release-date'"
   echo "         would select columns id, film & date, aliasing date -> release-date"
   echo "  h    : show this help text"
+  echo ""
 }
 
 while getopts "h" opt
