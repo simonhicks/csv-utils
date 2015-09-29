@@ -32,7 +32,7 @@ fi
 awk -F, -v cols="$1" '
 BEGIN {
   numberOfColumns = split(cols, columns)
-  for (i=1; i<=numberOfColumns ; i++) {
+  for (i=1; i<=numberOfColumns; i++) {
     n = split(columns[i], parts, "=")
     columnName = parts[1]
     outputIndex[columnName] = i
