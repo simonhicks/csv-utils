@@ -234,9 +234,9 @@ these scripts handle escapes or quoting or anything like that yet.
 
 These are things I'm planning to do soon (roughly in order)
 
+- make the record separator configurable everywhere
 - change count-by to count and make it handle both group-by and count unique values
 - set operations (eg. keep only records where x.foo appears in column y.bar)
-- make the record separator configurable everywhere
 - README entry for bin/format
 - add support for long-form options using something like [this](http://stackoverflow.com/a/7680682)
   or (even better if possible) something like [this](http://stackoverflow.com/a/5255468)
