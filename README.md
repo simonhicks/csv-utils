@@ -155,13 +155,13 @@ Walt Disney Television Animation  311
 Walt Disney                       5199
 ```
 
-### `sum`
+### `aggregate`
 
 You also might want to look at the distribution of revenue between the different locations. You can
-use `sum` to see the total sales of each location.
+use `aggregate` to see the total sales of each location.
 
 ```
-$ cat test/sales.csv | sum -g location -s amount | table
+$ cat test/sales.csv | aggregate -g location -c amount -a sum | table
 location  sum-of-amount
 Tokyo     34840.6
 Berlin    33544.4
@@ -169,6 +169,8 @@ London    33772.2
 Paris     34341.9
 NYC       34412.9
 ```
+
+Aside from calculating sum's, `aggregate` can also calculate min, max or mean values.
 
 ### `sort-by`
 
@@ -232,12 +234,17 @@ these scripts handle escapes or quoting or anything like that yet.
 
 These are things I'm planning to do soon (roughly in order)
 
-- change sum to aggregate and add support for other aggregations (eg. mean, max, min, etc.)
-- change count-by to count and make it handle both group-by and count unique
-- utilities for making one off queries on a file (e.g. show me all the headers in a readable format)
+- change count-by to count and make it handle both group-by and count unique values
+- set operations (eg. keep only records where x.foo appears in column y.bar)
 - make the record separator configurable everywhere
-- a script that lets you process csvs with a quote char or with escaped record separators in the
-  values (by systematically changing the separator, and removing the quotes)
-- multi column matches in enrich
-- more visualisations (histogram, distribution, other?)
-- pivot table
+- README entry for bin/format
+- add support for long-form options using something like [this](http://stackoverflow.com/a/7680682)
+  or (even better if possible) something like [this](http://stackoverflow.com/a/5255468)
+- standardise the options/flags/configurations
+- utilities for making terminating queries on a dataset (e.g. show me all the headers in a readable format)
+  - schema overview
+  - data summary (like summary in that thing)
+- multi column matches in bin/enrich
+- logical ands/ors in bin/filter
+- visualisations (histogram, distribution, other?)
+- pivot table (?)

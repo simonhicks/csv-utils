@@ -1,0 +1,67 @@
+#!/bin/bash
+
+show_help() {
+  echo ""
+  echo "USAGE: $(basename $0) [-h] -s input-sep [-S output-sep] [-q input-quote] [-Q output-quote]"
+  echo ""
+  echo "  s input-sep    : the field seperator used in the input data"
+  echo "  S output-sep   : the field seperator used for the output data"
+  echo "  q input-quote  : the quoting character used in the input data"
+  echo "  Q output-quote : the quoting character used for the output data"
+  echo "  h              : show this help text"
+  echo ""
+}
+
+INPUT_SEP=
+OUTPUT_SEP=
+INPUT_QUOTE=
+OUTPUT_QUOTE=
+while getopts "s:S:q:Q:h" opt
+do
+  case "$opt" in
+    s) INPUT_SEP="$OPTARG"
+      ;;
+    S) OUTPUT_SEP="$OPTARG"
+      ;;
+    q) INPUT_QUOTE="$OPTARG"
+      ;;
+    Q) OUTPUT_QUOTE="$OPTARG"
+      ;;
+    h)
+      show_help
+      exit 0
+      ;;
+  esac
+done
+shift $((OPTIND-1))
+
+# check input sep is set
+if [ "$INPUT_SEP" == "" ]
+then
+  >&2 echo "ERROR: Missing mandatory argument -s"
+  >&2 show_help
+  exit 1
+fi
+
+OUTPUT_SEP=${OUTPUT_SEP:-$INPUT_SEP}
+
+cat - | awk -F "${INPUT_QUOTE}${INPUT_SEP}${INPUT_QUOTE}" -v inputSep="$INPUT_SEP" -v inputQuote="$INPUT_QUOTE" -v outputSep="$OUTPUT_SEP" -v outputQuote="$OUTPUT_QUOTE" "
+NR==1 {
+  numHeaders=split(\$0, headers, inputSep)
+  sep=\"\"
+  for (i=1; i<=numHeaders; i++) {
+    printf(\"%c%s\", sep, headers[i]);
+    sep=outputSep
+  }
+  print \"\"
+}
+NR!=1 {
+  sep = \"\"
+  for (i=1; i<=NF; i++) {
+    gsub(/^${INPUT_QUOTE}/, \"\", \$i)
+    gsub(/${INPUT_QUOTE}$/, \"\", \$i)
+    printf(\"%c%c%s%c\", sep, outputQuote, \$i, outputQuote)
+    sep=outputSep
+  }
+  print \"\"
+}"

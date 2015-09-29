@@ -1,0 +1,117 @@
+#!/bin/bash
+
+show_help() {
+  echo ""
+  echo "USAGE: $(basename $0) [-h] [-g group-by-col] -c col -a aggregation"
+  echo ""
+  echo "  c col          : the column to use for the aggregation"
+  echo "  a aggregation  : the aggregation to apply ('sum', 'mean', 'min' or 'max')"
+  echo "  g group-by-col : group the sum by this column"
+  echo "  h              : print this help text"
+  echo ""
+}
+
+while getopts "hg:c:a:" opt
+do
+  case "$opt" in
+    h)
+      show_help
+      exit 0
+      ;;
+    c) AGGREGATION_COL="$OPTARG"
+      ;;
+    a) AGGREGATION="$OPTARG"
+      ;;
+    g) GROUP_BY_COL="$OPTARG"
+      ;;
+  esac
+done
+shift $((OPTIND-1))
+
+if [ "$AGGREGATION_COL" == "" ]
+then
+  >&2 echo "ERROR: Missing mandatory argument -c"
+  >&2 show_help
+  exit 1
+fi
+
+if [ "$AGGREGATION" == "" ]
+then
+  >&2 echo "ERROR: Missing mandatory argument -a"
+  >&2 show_help
+  exit 1
+fi
+
+if [ "$GROUP_BY_COL" != "" ]
+then
+  $(dirname $0)/columns $GROUP_BY_COL,$AGGREGATION_COL | awk -F, -v header=${GROUP_BY_COL} -v sumCol=${AGGREGATION_COL} -v aggregation=$AGGREGATION '
+BEGIN {
+  if (aggregation != "sum" && aggregation != "mean" && aggregation != "min" && aggregation != "max") {
+    print("ERROR: Invalid aggregation " aggregation)
+    exit 1
+  }
+}
+NR!=1 {
+  if (aggregation == "sum" || aggregation == "mean") {
+    aggregates[$1] += $2
+  }
+  if (aggregation == "mean") {
+    counts[$1] +=1
+  }
+  if (aggregation == "min" || aggregation == "max") {
+    if ($1 in aggregates) {
+      if ((aggregation == "min" && $2 < aggregates[$1]) || (aggregation == "max" && $2 > aggregates[$1])) {
+        aggregates[$1] = $2
+      }
+    } else {
+      aggregates[$1] = $2
+    }
+  }
+}
+END {
+  printf("%s,%s-of-%s", header, aggregation, sumCol)
+  print("")
+
+  for (value in aggregates) {
+    if (aggregation == "mean") {
+      aggregates[value] = aggregates[value] / counts[value]
+    }
+    printf("%s,%s", value, aggregates[value])
+    print("")
+  }
+}' -
+else
+  $(dirname $0)/columns $AGGREGATION_COL | awk -F, -v aggregation=$AGGREGATION '
+BEGIN {
+  if (aggregation != "sum" && aggregation != "mean" && aggregation != "min" && aggregation != "max") {
+    print("ERROR: Invalid aggregation " aggregation)
+    exit 1
+  }
+}
+NR==2 {
+  if (aggregation == "min" || aggregation == "max") {
+    aggregate = $0
+  }
+}
+NR!=1 {
+  if (aggregation == "sum" || aggregation == "mean") {
+    aggregate += $0
+  }
+  if (aggregation == "mean") {
+    count += 1
+  }
+  if (aggregation == "min" && $0 < aggregate) {
+    aggregate = $0
+  }
+  if (aggregation == "max" && $0 > aggregate) {
+    aggregate = $0
+  }
+}
+END {
+  if (aggregation == "mean") {
+    aggregate = aggregate / count
+  }
+  print aggregate
+}
+' -
+fi
