@@ -2,24 +2,28 @@
 
 show_help() {
   echo ""
-  echo "USAGE: $(basename $0) [-h] -s sort-by-col [-d direction]"
+  echo "USAGE: $(basename $0) [-h] [-s sep] -c sort-by-col [-d direction]"
   echo ""
-  echo "  s sort-by-col : sort the rows by this column"
+  echo "  s sep         : the field separator used in the input data"
+  echo "  c sort-by-col : sort the rows by this column"
   echo "  d direction   : either 'asc' or 'desc' (default 'desc')"
   echo "  h             : print this help text"
   echo ""
 }
 
+SEPARATOR=,
 DIRECTION="desc"
 GROUP_BY_COL=""
-while getopts "hs:d:" opt
+while getopts "hs:d:c:" opt
 do
   case "$opt" in
     h)
       show_help
       exit 0
       ;;
-    s) SORT_BY_COL="$OPTARG"
+    s) SEPARATOR="$OPTARG"
+      ;;
+    c) SORT_BY_COL="$OPTARG"
       ;;
     d) DIRECTION="$OPTARG"
       ;;
@@ -49,7 +53,7 @@ fi
 read HEADERS
 
 OLD_IFS=$IFS
-IFS=,
+IFS=$SEPARATOR
 SORT_BY_INDEX=""
 i=1
 for HEADER in $HEADERS
@@ -70,4 +74,4 @@ then
 fi
 
 echo $HEADERS
-sort $D_FLAG -t , -k $SORT_BY_INDEX -n -
+sort $D_FLAG -t $SEPARATOR -k $SORT_BY_INDEX -n -

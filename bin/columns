@@ -2,18 +2,23 @@
 
 show_help() {
   echo ""
-  echo "USAGE: $(basename $0) [-h] cols"
+  echo "USAGE: $(basename $0) [-h] [-s sep] cols"
   echo ""
-  echo "  cols : a comma seperated list of the columns to keep. You can also alias"
+  echo "  sep  : the field separator used in the input data"
+  echo "  cols : a comma separated list of the columns to keep. You can also alias"
   echo "         columns using old-name=new-name, so '$(basename $0) id,film,date=release-date'"
   echo "         would select columns id, film & date, aliasing date -> release-date"
   echo "  h    : show this help text"
   echo ""
 }
 
-while getopts "h" opt
+SEPARATOR=,
+
+while getopts "hs:" opt
 do
   case "$opt" in
+    s) SEPARATOR="$OPTARG"
+      ;;
     h)
       show_help
       exit 0
@@ -29,9 +34,9 @@ then
   exit 1
 fi
 
-awk -F, -v cols="$1" '
+awk -F $SEPARATOR -v cols="$1" '
 BEGIN {
-  numberOfColumns = split(cols, columns)
+  numberOfColumns = split(cols, columns, FS)
   for (i=1; i<=numberOfColumns; i++) {
     n = split(columns[i], parts, "=")
     columnName = parts[1]
@@ -49,10 +54,16 @@ NR==1 {
       inputIndex[outputIndex[$f]] = f
     }
   }
+  for (i=1; i<=numberOfColumns; i++) {
+    if (! (i in inputIndex)) {
+      print("ERROR: Invalid column name: " columns[i])
+      exit 1
+    }
+  }
   sep = ""
   for (f=1; f<=numberOfColumns; f++) {
     printf("%c%s", sep, headers[f])
-    sep=","
+    sep=FS
   }
   print ""
 }

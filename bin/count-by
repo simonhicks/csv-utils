@@ -2,20 +2,25 @@
 
 show_help() {
   echo ""
-  echo "USAGE: $(basename $0) [-h] -g group-by-col"
+  echo "USAGE: $(basename $0) [-h] [-s sep] -g group-by-col"
   echo ""
+  echo "  s sep          : the field separator used in the input data"
   echo "  g group-by-col : group the count by this column"
   echo "  h              : print this help text"
   echo ""
 }
 
+SEPARATOR=,
+
 GROUP_BY_COL=""
-while getopts "hg:" opt
+while getopts "hg:s:" opt
 do
   case "$opt" in
     h)
       show_help
       exit 0
+      ;;
+    s) SEPARATOR="$OPTARG"
       ;;
     g) GROUP_BY_COL="$OPTARG"
       ;;
@@ -30,7 +35,7 @@ then
   exit 1
 fi
 
-$(dirname $0)/columns $GROUP_BY_COL | awk -v header=${GROUP_BY_COL} '
+$(dirname $0)/columns -s $SEPARATOR $GROUP_BY_COL | awk -F $SEPARATOR -v header=${GROUP_BY_COL} '
 NR==1 {
   if (header=="") {
     header=$0
@@ -40,16 +45,13 @@ NR!=1 {
   counts[$0]+=1
 }
 END {
-  printf("%s,%s", header, "count")
-  print("")
+  print(header FS "count")
 
   for (line in counts) {
     if (line != "") {
-      printf("%s,%s", line, counts[line])
-      print("")
+      print(line FS counts[line])
     } else {
-      printf(" ,%s", counts[line])
-      print("")
+      print(" " FS counts[line])
     }
   }
 }' -

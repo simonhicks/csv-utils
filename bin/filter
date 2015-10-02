@@ -2,8 +2,9 @@
 
 show_help() {
   echo ""
-  echo "USAGE: $(basename $0) [-h] -c condition [-n]"
+  echo "USAGE: $(basename $0) [-h] [-s sep] -c condition [-n]"
   echo ""
+  echo "  s sep       : the field separator used in the input data"
   echo "  c condition : the condition to use for filtering. This should take the form"
   echo "                'number-column==1', 'string-column==\"foo\"' or 'column~/regex/'"
   echo "                The supported operators are ~, ==, <, >, <= and >="
@@ -12,14 +13,18 @@ show_help() {
   echo ""
 }
 
+SEPARATOR=,
+
 NEGATE=""
 CONDITION=""
-while getopts "hc:n" opt
+while getopts "hc:ns:" opt
 do
   case "$opt" in
     h)
       show_help
       exit 0
+      ;;
+    s) SEPARATOR="$OPTARG"
       ;;
     c) CONDITION="$OPTARG"
       ;;
@@ -43,7 +48,7 @@ CONDITION_COL=${CONDITION/[~=<>]*/}
 read HEADERS
 
 OLD_IFS=$IFS
-IFS=,
+IFS=$SEPARATOR
 CONDITION_INDEX=""
 i=1
 for HEADER in $HEADERS
@@ -68,7 +73,7 @@ CONDITION=${CONDITION/$CONDITION_COL/\$$CONDITION_INDEX}
 
 echo $HEADERS
 
-awk -F, "{
+awk -F $SEPARATOR "{
   if ($NEGATE ($CONDITION)) {
     print \$0
   }

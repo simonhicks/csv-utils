@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# TODO make multi-field joins possible
-
 show_help() {
   echo ""
-  echo "USAGE: $(basename $0) [-h] -l lookup-file -k lookup-key -d data-key [-c columns]"
+  echo "USAGE: $(basename $0) [-h] [-s sep] [-S lookup-sep] -l lookup-file -k lookup-key -d data-key [-c columns]"
   echo ""
+  echo "  s sep         : the field separator used in the input data"
+  echo "  S lookup-sep  : the field separator used in the lookup data"
   echo "  l lookup-file : The csv file to use as the lookup file"
   echo "  d data-key    : The column in the input data to look up in the lookup file"
   echo "  k lookup-key  : The column in the lookup file to match against the data key"
@@ -15,15 +15,22 @@ show_help() {
   echo ""
 }
 
+SEPARATOR=,
+LOOKUP_SEPARATOR=,
+
 LOOKUP_FILE_KEY=""
 LOOKUP_FILE=""
 DATA_FILE_KEY=""
-while getopts "hk:l:d:c:" opt
+while getopts "hk:s:l:d:c:S:" opt
 do
   case "$opt" in
     h)
       show_help
       exit 0
+      ;;
+    s) SEPARATOR="$OPTARG"
+      ;;
+    S) LOOKUP_SEPARATOR="$OPTARG"
       ;;
     k) LOOKUP_FILE_KEY="$OPTARG"
       ;;
@@ -58,13 +65,12 @@ then
   exit 1
 fi
 LOOKUP_TABLE_NAME=`basename $LOOKUP_FILE .csv`
-ENRICHMENT_COLUMNS=${COLUMNS:-`head -n 1 $LOOKUP_FILE | sed "s/\([^,]*\)/\1=${LOOKUP_TABLE_NAME}_\1/g"`}
+ENRICHMENT_COLUMNS=${COLUMNS:-`head -n 1 $LOOKUP_FILE | sed "s/\([^$LOOKUP_SEPARATOR]*\)/\1=${LOOKUP_TABLE_NAME}_\1/g"`}
 
-
-awk -F ',' -v lookupFileKey=$LOOKUP_FILE_KEY -v dataFileKey=$DATA_FILE_KEY -v columns=$ENRICHMENT_COLUMNS '
+awk -F $SEPARATOR -v "lookupSep=$LOOKUP_SEPARATOR" -v "lookupFileKey=$LOOKUP_FILE_KEY" -v "dataFileKey=$DATA_FILE_KEY" -v "columns=$ENRICHMENT_COLUMNS" '
 BEGIN {
   # parse "columns" into an array of column names/aliases to use
-  numEnrichmentCols = split(columns,enrichmentColumns)
+  numEnrichmentCols = split(columns, enrichmentColumns, lookupSep)
   for (i=1; i<=numEnrichmentCols; i++) {
     n = split(enrichmentColumns[i], parts, "=")
     enrichmentCols[i] = parts[1]
@@ -79,17 +85,20 @@ BEGIN {
 
 FNR==1 {
   if (FNR == NR) {
+    # cant use $i syntax, because lookupSep might not equal FS
+    numFields = split($0, fields, lookupSep)
+
     # find the column to use as the lookup column
-    for (i=1; i<=NF; i++) {
-      if ($i == lookupFileKey) {
+    for (i=1; i<=numFields; i++) {
+      if (fields[i] == lookupFileKey) {
         lookupFileColumn=i
       }
     }
 
     # find the indexes to enrich with
-    for (i=1; i<=NF; i++) {
-      if ($i in enrichmentOrder) {
-        enrichmentIndexes[enrichmentOrder[$i]] = i
+    for (i=1; i<=numFields; i++) {
+      if (fields[i] in enrichmentOrder) {
+        enrichmentIndexes[enrichmentOrder[fields[i]]] = i
       }
     }
 
@@ -120,7 +129,10 @@ FNR==1 {
 
 FNR!=1 {
   if (FNR == NR) {
-    enrichmentLines[$lookupFileColumn]=$0 
+    # cant use $i syntax, because lookupSep might not equal FS
+    numFields = split($0, fields, lookupSep)
+
+    enrichmentLines[fields[lookupFileColumn]]=$0
   } else {
     # print all the data file fields except the one used in the lookup
     for (n=1; n<=NF; n++) {
@@ -130,7 +142,7 @@ FNR!=1 {
     }
 
     # print all the enrichment fields
-    split(enrichmentLines[$dataFileColumn], enrichmentFields, FS)
+    split(enrichmentLines[$dataFileColumn], enrichmentFields, lookupSep)
     sep=""
     for (n=1; n<=numEnrichmentCols; n++) {
       printf("%c%s", sep, enrichmentFields[enrichmentIndexes[n]])

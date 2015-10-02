@@ -1,1 +1,27 @@
-column -s , -t
+#!/bin/bash
+
+show_help() {
+  echo ""
+  echo "USAGE: $(basename $0) [-h] [-s sep]"
+  echo ""
+  echo "  sep  : the field separator used in the input data"
+  echo "  h    : show this help text"
+  echo ""
+}
+
+SEPARATOR=,
+
+while getopts "hs:" opt
+do
+  case "$opt" in
+    s) SEPARATOR="$OPTARG"
+      ;;
+    h)
+      show_help
+      exit 0
+      ;;
+  esac
+done
+shift $((OPTIND-1))
+
+cat | column -s $SEPARATOR  -t

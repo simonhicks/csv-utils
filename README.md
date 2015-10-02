@@ -220,6 +220,23 @@ Studio Ghibli               565
 C.O.R.E.[st 4]              106
 ```
 
+### Working with other field separators and quoted csvs
+
+All of these scripts can be configured to use a different field separator using the `-s` flag. You
+can also use the `format` script to modify the field separator or to add/remove/change the character
+used to quote field values in the middle of a pipeline. For example, in this (entirely contrived)
+example, we do the following steps:
+
+1. read the data from sales.csv using ',' as the field separator
+2. convert the field separator to '|'
+3. extract the 'location' and 'amount' columns using '|' as the field separator
+4. convert the field separator back to ','
+5. display the data in a table
+
+```
+$ cat test-data/sales.csv | format -s , -S \| | columns -s \| location\|amount | format -s \| -S , | table
+```
+
 ## Installation
 
 These are just bash scripts, so all you have to do is clone this repo and add the bin folder to your
@@ -234,10 +251,10 @@ these scripts handle escapes or quoting or anything like that yet.
 
 These are things I'm planning to do soon (roughly in order)
 
-- make the record separator configurable everywhere
 - change count-by to count and make it handle both group-by and count unique values
+- use awk record separator to handle leading and trailing quotes (ideally everywhere)
+- option to read separator and quote-char from ENV
 - set operations (eg. keep only records where x.foo appears in column y.bar)
-- README entry for bin/format
 - add support for long-form options using something like [this](http://stackoverflow.com/a/7680682)
   or (even better if possible) something like [this](http://stackoverflow.com/a/5255468)
 - standardise the options/flags/configurations
