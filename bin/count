@@ -1,0 +1,95 @@
+#!/bin/bash
+
+show_help() {
+  echo ""
+  echo "USAGE: $(basename $0) [-h] [-s sep] [-g group-by-col] [-u unique-col]"
+  echo ""
+  echo "  s sep          : the field separator used in the input data"
+  echo "  g group-by-col : group the count by this column"
+  echo "  g unique-col   : count the unique values in this column"
+  echo "  h              : print this help text"
+  echo ""
+}
+
+SEPARATOR=,
+
+GROUP_BY_COL=""
+UNIQUE_COL=""
+while getopts "hu:g:s:" opt
+do
+  case "$opt" in
+    h)
+      show_help
+      exit 0
+      ;;
+    s) SEPARATOR="$OPTARG"
+      ;;
+    u) UNIQUE_COL="$OPTARG"
+      ;;
+    g) GROUP_BY_COL="$OPTARG"
+      ;;
+  esac
+done
+shift $((OPTIND-1))
+
+if [ "$GROUP_BY_COL" == "" ] && [ "$UNIQUE_COL" == "" ]
+then
+  cat - | wc -l
+elif [ "$GROUP_BY_COL" != "" ] && [ "$UNIQUE_COL" == "" ]
+then
+  $(dirname $0)/columns -s $SEPARATOR "$GROUP_BY_COL" | awk -F $SEPARATOR -v header=${GROUP_BY_COL} '
+  NR==1 {
+    if (header=="") {
+      header=$0
+    }
+  }
+  NR!=1 {
+    counts[$0]+=1
+  }
+  END {
+    print(header FS "count")
+
+    for (line in counts) {
+      if (line != "") {
+        print(line FS counts[line])
+      } else {
+        print(" " FS counts[line])
+      }
+    }
+  }' -
+elif [ "$GROUP_BY_COL" == "" ] && [ "$UNIQUE_COL" != "" ]
+then
+  $(dirname $0)/columns -s $SEPARATOR "$UNIQUE_COL" | awk -F $SEPARATOR '
+  NR!=1 {
+    if (values[$0] != "found") {
+      count++
+      values[$0] = "found"
+    }
+  }
+  END {
+    print(count)
+  }' -
+else # both GROUP_BY_COL and UNIQUE_COL are set
+  $(dirname $0)/columns -s $SEPARATOR "${GROUP_BY_COL}${SEPARATOR}${UNIQUE_COL}" | awk -F $SEPARATOR '
+  NR==1 {
+    groupCol = $1
+    uniqueCol = $2
+  }
+  NR!=1 {
+    if (values[$0] != "found") {
+      counts[$1]++
+      values[$0] = "found"
+    }
+  }
+  END {
+    print(groupCol FS "unique-values-of-" uniqueCol)
+
+    for (line in counts) {
+      if (line != "") {
+        print(line FS counts[line])
+      } else {
+        print(" " FS counts[line])
+      }
+    }
+  }' -
+fi

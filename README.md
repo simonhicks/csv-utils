@@ -130,9 +130,9 @@ date      location  format  amount  movie-title                      studio
 ...
 ```
 
-### `count-by`
+### `count`
 
-Now that you've got some joined up data, you can start doing some simple analysis. You can use `count` by
+Now that you've got some joined up data, you can start doing some simple analysis. You can use `count`
 to see which studio is selling the most movies.
 
 ```
@@ -154,6 +154,11 @@ C.O.R.E.[st 4]                    106
 Walt Disney Television Animation  311
 Walt Disney                       5199
 ```
+
+`count` supports grouping by a column (i.e. count the number of rows for each value of column X),
+unique counts (i.e. count the number of unique values there are in column X), grouped unique counts
+(i.e. count the number of unique values of column X there are in rows for each value of column Y)
+and of course plain 'ol counts (i.e. count the total number of rows)
 
 ### `aggregate`
 
@@ -251,7 +256,6 @@ these scripts handle escapes or quoting or anything like that yet.
 
 These are things I'm planning to do soon (roughly in order)
 
-- change count-by to count and make it handle both group-by and count unique values
 - use awk record separator to handle leading and trailing quotes (ideally everywhere)
 - option to read separator and quote-char from ENV
 - set operations (eg. keep only records where x.foo appears in column y.bar)
