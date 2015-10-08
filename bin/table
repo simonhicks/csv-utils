@@ -9,7 +9,7 @@ show_help() {
   echo ""
 }
 
-SEPARATOR=,
+SEPARATOR=${CSV_UTILS_SEPARATOR:-,}
 
 while getopts "hs:" opt
 do

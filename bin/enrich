@@ -15,7 +15,7 @@ show_help() {
   echo ""
 }
 
-SEPARATOR=,
+SEPARATOR=${CSV_UTILS_SEPARATOR:-,}
 LOOKUP_SEPARATOR=,
 
 LOOKUP_FILE_KEY=""

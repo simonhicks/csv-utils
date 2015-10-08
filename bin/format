@@ -12,7 +12,7 @@ show_help() {
   echo ""
 }
 
-INPUT_SEP=
+INPUT_SEP=${CSV_UTILS_SEPARATOR:-,}
 OUTPUT_SEP=
 INPUT_QUOTE=
 OUTPUT_QUOTE=

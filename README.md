@@ -242,6 +242,10 @@ example, we do the following steps:
 $ cat test-data/sales.csv | format -s , -S \| | columns -s \| location\|amount | format -s \| -S , | table
 ```
 
+Since you'll usually want to use the same field separator for each command in a chain, you can also
+define the field separator by setting the `CSV_UTILS_SEPARATOR` environment variable. Using `-s`
+will always take precedence though.
+
 ## Installation
 
 These are just bash scripts, so all you have to do is clone this repo and add the bin folder to your
@@ -256,8 +260,6 @@ these scripts handle escapes or quoting or anything like that yet.
 
 These are things I'm planning to do soon (roughly in order)
 
-- use awk record separator to handle leading and trailing quotes (ideally everywhere)
-- option to read separator and quote-char from ENV
 - set operations (eg. keep only records where x.foo appears in column y.bar)
 - add support for long-form options using something like [this](http://stackoverflow.com/a/7680682)
   or (even better if possible) something like [this](http://stackoverflow.com/a/5255468)

@@ -11,7 +11,7 @@ show_help() {
   echo ""
 }
 
-SEPARATOR=,
+SEPARATOR=${CSV_UTILS_SEPARATOR:-,}
 DIRECTION="desc"
 GROUP_BY_COL=""
 while getopts "hs:d:c:" opt
