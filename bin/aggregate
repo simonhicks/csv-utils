@@ -84,7 +84,7 @@ NR!=1 {
 }
 
 END {
-  printf("%s-of-%s", header FS aggregation, sumCol)
+  printf("%s_of_%s", header FS aggregation, sumCol)
   print("")
 
   for (value in aggregates) {

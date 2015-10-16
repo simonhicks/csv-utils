@@ -48,6 +48,7 @@ BEGIN {
     }
   }
 }
+
 NR==1 {
   for (f=1; f<=NF; f++) {
     if ($f in outputIndex) {
@@ -67,6 +68,7 @@ NR==1 {
   }
   print ""
 }
+
 NR!=1{
   sep = ""
   for (f=1; f<=numberOfColumns; f++) {

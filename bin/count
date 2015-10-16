@@ -43,12 +43,13 @@ then
       header=$0
     }
   }
+
   NR!=1 {
     counts[$0]+=1
   }
+
   END {
     print(header FS "count")
-
     for (line in counts) {
       if (line != "") {
         print(line FS counts[line])
@@ -60,12 +61,14 @@ then
 elif [ "$GROUP_BY_COL" == "" ] && [ "$UNIQUE_COL" != "" ]
 then
   $(dirname $0)/columns -s $SEPARATOR "$UNIQUE_COL" | awk -F $SEPARATOR '
+
   NR!=1 {
     if (values[$0] != "found") {
       count++
       values[$0] = "found"
     }
   }
+
   END {
     print(count)
   }' -
@@ -75,15 +78,16 @@ else # both GROUP_BY_COL and UNIQUE_COL are set
     groupCol = $1
     uniqueCol = $2
   }
+
   NR!=1 {
     if (values[$0] != "found") {
       counts[$1]++
       values[$0] = "found"
     }
   }
-  END {
-    print(groupCol FS "unique-values-of-" uniqueCol)
 
+  END {
+    print(groupCol FS "unique_values_of_" uniqueCol)
     for (line in counts) {
       if (line != "") {
         print(line FS counts[line])

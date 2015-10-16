@@ -73,8 +73,8 @@ data would just look like a regular csv.
 This is used to limit output to specific columns, renaming them if necessary:
 
 ```
-$ cat sales.csv | columns date,film=film-id,amount=price | table
-date      film-id  price
+$ cat sales.csv | columns date,film=film_id,amount=price | table
+date      film_id  price
 20150908  78       16.99
 20150909  26       15.99
 20150901  99       15.99
@@ -115,8 +115,8 @@ syntax to `columns`. Lets enrich the sales data with just the movie title and th
 produced that movie.
 
 ```
-$ cat sales.csv | enrich -l titles.csv -k id -d film -c title=movie-title,studio | table
-date      location  format  amount  movie-title                      studio
+$ cat sales.csv | enrich -l titles.csv -k id -d film -c title=movie_title,studio | table
+date      location  format  amount  movie_title                      studio
 20150908  Tokyo     mp4     16.99   Up                               Pixar Animation Studios
 20150909  Tokyo     mp4     15.99   The Great Mouse Detective        Walt Disney
 20150901  Berlin    BluRay  15.99   The Wind Rises                   Studio Ghibli
@@ -136,7 +136,7 @@ Now that you've got some joined up data, you can start doing some simple analysi
 to see which studio is selling the most movies.
 
 ```
-$ cat test/sales.csv | enrich -l titles.csv -k id -d film -c title=movie-title,studio | count-by -g studio | table
+$ cat test/sales.csv | enrich -l titles.csv -k id -d film -c title=movie_title,studio | count-by -g studio | table
 studio                            count
                                   93
 ImageMovers Digital[st 6]         208
@@ -167,7 +167,7 @@ use `aggregate` to see the total sales of each location.
 
 ```
 $ cat test/sales.csv | aggregate -g location -c amount -a sum | table
-location  sum-of-amount
+location  sum_of_amount
 Tokyo     34840.6
 Berlin    33544.4
 London    33772.2
@@ -182,8 +182,8 @@ Aside from calculating sum's, `aggregate` can also calculate min, max or mean va
 You can use `sort-by` to numerically sort this data to see which location is the most profitable.
 
 ```
-$ cat test/sales.csv | sum -g location -s amount | sort-by -s sum-of-amount -d desc | table
-location  sum-of-amount
+$ cat test/sales.csv | sum -g location -s amount | sort-by -s sum_of_amount -d desc | table
+location  sum_of_amount
 Tokyo     34840.6
 NYC       34412.9
 Paris     34341.9
@@ -225,6 +225,25 @@ Studio Ghibli               565
 C.O.R.E.[st 4]              106
 ```
 
+### `derive`
+
+`derive` is used to add a new column, based on the values of other columns. At this point, I'm far
+too lazy to come up with realistic examples, but here's how you could use it to add a new column
+containing the result of that row's id, plus that row's price.
+
+```
+$ head -n 5 test/titles.csv | derive -c id_plus_price -e 'id+price' | table
+id  title               date      studio              price  id_plus_price
+58  The Jungle Book 2   20030214  DisneyToon Studios  14.99  72.99
+88  Winnie the Pooh     20110715  Walt Disney         17.99  105.99
+9   Fun and Fancy Free  19470927  Walt Disney         17.99  26.99
+93  Frankenweenie       20121105  Tim Burton[st 3]    14.99  107.99
+```
+
+This works by replacing the column header names in the expression with their awk column references,
+and then directly substituting the resulting expression into an awk script. In other words, the
+expression parameter should supports any valid awk expression.
+
 ### Working with other field separators and quoted csvs
 
 All of these scripts can be configured to use a different field separator using the `-s` flag. You
@@ -260,14 +279,17 @@ these scripts handle escapes or quoting or anything like that yet.
 
 These are things I'm planning to do soon (roughly in order)
 
-- set operations (eg. keep only records where x.foo appears in column y.bar)
-- add support for long-form options using something like [this](http://stackoverflow.com/a/7680682)
-  or (even better if possible) something like [this](http://stackoverflow.com/a/5255468)
-- standardise the options/flags/configurations
-- utilities for making terminating queries on a dataset (e.g. show me all the headers in a readable format)
-  - schema overview
-  - data summary (like summary in that thing)
-- multi column matches in bin/enrich
-- logical ands/ors in bin/filter
-- visualisations (histogram, distribution, other?)
-- pivot table (?)
+- **New actions**
+  - set operations (eg. keep only records where x.foo appears in column y.bar)
+  - derive (eg. new-column -n foo -f 'col1+col2')
+  - visualisations (histogram, distribution, other?)
+  - utilities for making terminating queries on a dataset (e.g. schema overview or summary widget in
+    the thing)
+  - pivot table (?)
+- **Functional improvements**
+  - multi column matches in bin/enrich
+  - logical ands/ors in bin/filter
+- **Non functional improvements**
+  - add support for long-form options using something like [this](http://stackoverflow.com/a/7680682)
+    or (even better if possible) something like [this](http://stackoverflow.com/a/5255468)
+  - standardise the options/flags/configurations

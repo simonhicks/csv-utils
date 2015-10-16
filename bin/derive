@@ -1,0 +1,76 @@
+#!/bin/bash
+
+show_help() {
+  echo ""
+  echo "USAGE: $(basename $0) [-h] [-s sep] -e expression -c col"
+  echo ""
+  echo "  s sep          : the field separator used in the input data"
+  echo "  c col          : the name of the column to add"
+  echo "  e expression   : the expression used to derive the new column"
+  echo "  h              : print this help text"
+  echo ""
+}
+
+SEPARATOR=${CSV_UTILS_SEPARATOR:-,}
+
+while getopts "he:c:s:" opt
+do
+  case "$opt" in
+    h)
+      show_help
+      exit 0
+      ;;
+    s) SEPARATOR="$OPTARG"
+      ;;
+    c) COL_NAME="$OPTARG"
+      ;;
+    e) EXPRESSION="$OPTARG"
+      ;;
+  esac
+done
+shift $((OPTIND-1))
+
+if [ "$COL_NAME" == "" ]
+then
+  >&2 echo "ERROR: Missing mandatory argument -c"
+  >&2 show_help
+  exit 1
+fi
+
+if [ "$EXPRESSION" == "" ]
+then
+  >&2 echo "ERROR: Missing mandatory argument -e"
+  >&2 show_help
+  exit 1
+fi
+
+# figure out which version of sed we're using
+START_WORD='\b'
+END_WORD='\b'
+SED="sed"
+case "`uname`" in
+  Darwin*)
+    START_WORD='[[:<:]]'
+    END_WORD='[[:>:]]'
+    SED="/usr/bin/sed"
+    ;;
+esac
+
+read HEADERS
+
+OLD_IFS=$IFS
+IFS=$SEPARATOR
+i=1
+SED_COMMAND="$SED "
+for HEADER in $HEADERS
+do
+  SED_COMMAND="$SED_COMMAND -e 's/${START_WORD}${HEADER}${END_WORD}/\$$i/g'"
+  # replace all instances of $HEADER in $EXPRESSION with \$$i
+  i=$((i+1))
+done
+IFS=$OLD_IFS
+
+EXPRESSION=`bash -c "echo $EXPRESSION | $SED_COMMAND"`
+
+echo ${HEADERS}${SEPARATOR}${COL_NAME}
+awk -F $SEPARATOR "{ printf(\"%s%s%s\n\", \$0, FS, $EXPRESSION) }"
