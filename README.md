@@ -241,8 +241,20 @@ id  title               date      studio              price  id_plus_price
 ```
 
 This works by replacing the column header names in the expression with their awk column references,
-and then directly substituting the resulting expression into an awk script. In other words, the
-expression parameter should supports any valid awk expression.
+and then directly substituting the resulting expression into an awk script. In other words the
+expression parameter should support any valid awk expression, however since it's done using bash
+substitution sometimes some pretty nasty bash escaping is needed to get it to actually work. Aside
+from arithmetic operations (as the above example), the other common use case is string
+concatenation. This is done as follows:
+
+```
+$ head -n 5 sales.csv | enrich -l titles.csv -k id -d film -c title=film | derive -c description -e '\"Someone bought \" film \" for £\" amount' | table
+date      location  format  amount  film                       description
+20150908  Tokyo     mp4     16.99   Up                         Someone bought Up for £16.99
+20150909  Tokyo     mp4     15.99   The Great Mouse Detective  Someone bought The Great Mouse Detective for £15.99
+20150901  Berlin    BluRay  15.99   The Wind Rises             Someone bought The Wind Rises for £15.99
+20150912  London    DVD     14.99   Frankenweenie              Someone bought Frankenweenie for £14.99
+```
 
 ### Working with other field separators and quoted csvs
 
@@ -270,10 +282,13 @@ will always take precedence though.
 These are just bash scripts, so all you have to do is clone this repo and add the bin folder to your
 `$PATH` and you're ready to go!
 
-## Warning
+## Warnings
 
-The vast majority of this is just awk, without anything particularly clever being done. None of
-these scripts handle escapes or quoting or anything like that yet.
+- The vast majority of this is just awk, without anything particularly clever being done. None of
+  these scripts handle escapes or quoting or anything like that yet.
+- Some of these scripts assume that column headers only include "word characters" (i.e. a-z, A-Z,
+  0-9 and \_).
+- The character escaping can sometimes be a little counter intuitive.
 
 ## TODO list
 
@@ -281,7 +296,6 @@ These are things I'm planning to do soon (roughly in order)
 
 - **New actions**
   - set operations (eg. keep only records where x.foo appears in column y.bar)
-  - derive (eg. new-column -n foo -f 'col1+col2')
   - visualisations (histogram, distribution, other?)
   - utilities for making terminating queries on a dataset (e.g. schema overview or summary widget in
     the thing)

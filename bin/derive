@@ -70,7 +70,7 @@ do
 done
 IFS=$OLD_IFS
 
-EXPRESSION=`bash -c "echo $EXPRESSION | $SED_COMMAND"`
+EXPRESSION=`bash -c "echo \"${EXPRESSION}\" | $SED_COMMAND"`
 
 echo ${HEADERS}${SEPARATOR}${COL_NAME}
 awk -F $SEPARATOR "{ printf(\"%s%s%s\n\", \$0, FS, $EXPRESSION) }"
