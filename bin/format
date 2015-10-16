@@ -50,7 +50,7 @@ NR==1 {
   numHeaders=split(\$0, headers, inputSep)
   sep=\"\"
   for (i=1; i<=numHeaders; i++) {
-    printf(\"%c%s\", sep, headers[i]);
+    printf(\"%s%s\", sep, headers[i]);
     sep=outputSep
   }
   print \"\"
@@ -60,7 +60,7 @@ NR!=1 {
   for (i=1; i<=NF; i++) {
     gsub(/^${INPUT_QUOTE}/, \"\", \$i)
     gsub(/${INPUT_QUOTE}$/, \"\", \$i)
-    printf(\"%c%c%s%c\", sep, outputQuote, \$i, outputQuote)
+    printf(\"%s%s%s%s\", sep, outputQuote, \$i, outputQuote)
     sep=outputSep
   }
   print \"\"

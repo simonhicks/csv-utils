@@ -113,14 +113,14 @@ FNR==1 {
     # print all the data file headers except the one used in the lookup
     for (n=1; n<=NF; n++) {
       if (n != dataFileColumn) {
-        printf("%s%c", $n, FS)
+        printf("%s%s", $n, FS)
       }
     }
 
     # print all the enrichment headers
     sep=""
     for (i=1; i<=numEnrichmentCols; i++) {
-      printf("%c%s", sep, enrichmentAliases[i])
+      printf("%s%s", sep, enrichmentAliases[i])
       sep=FS
     }
     print ""
@@ -137,7 +137,7 @@ FNR!=1 {
     # print all the data file fields except the one used in the lookup
     for (n=1; n<=NF; n++) {
       if (n != dataFileColumn) {
-        printf("%s%c", $n, FS)
+        printf("%s%s", $n, FS)
       }
     }
 
@@ -145,7 +145,7 @@ FNR!=1 {
     split(enrichmentLines[$dataFileColumn], enrichmentFields, lookupSep)
     sep=""
     for (n=1; n<=numEnrichmentCols; n++) {
-      printf("%c%s", sep, enrichmentFields[enrichmentIndexes[n]])
+      printf("%s%s", sep, enrichmentFields[enrichmentIndexes[n]])
       sep=FS
     }
     print ""

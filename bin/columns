@@ -62,7 +62,7 @@ NR==1 {
   }
   sep = ""
   for (f=1; f<=numberOfColumns; f++) {
-    printf("%c%s", sep, headers[f])
+    printf("%s%s", sep, headers[f])
     sep=FS
   }
   print ""
@@ -70,7 +70,7 @@ NR==1 {
 NR!=1{
   sep = ""
   for (f=1; f<=numberOfColumns; f++) {
-    printf("%c%s", sep, $inputIndex[f])
+    printf("%s%s", sep, $inputIndex[f])
     sep=FS
   }
   print ""
