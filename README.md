@@ -295,7 +295,7 @@ These are just bash scripts, so all you have to do is clone this repo and add th
 These are things I'm planning to do soon (roughly in order)
 
 - **New actions**
-  - set operations (eg. keep only records where x.foo appears in column y.bar)
+  - set operations (eg. keep only/remove records where x.foo appears in column y.bar)
   - visualisations (histogram, distribution, other?)
   - utilities for making terminating queries on a dataset (e.g. schema overview or summary widget in
     the thing)
