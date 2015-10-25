@@ -1,0 +1,107 @@
+#!/bin/bash
+
+show_help() {
+  echo ""
+  echo "USAGE: $(basename $0) [-h] [-n] [-s sep] [-S lookup-sep] -l lookup-file -k lookup-key -d data-key"
+  echo ""
+  echo "  s sep         : the field separator used in the input data"
+  echo "  S lookup-sep  : the field separator used in the lookup data"
+  echo "  l lookup-file : The csv file to use as the lookup file"
+  echo "  d data-key    : The column in the input data to look up in the lookup file"
+  echo "  k lookup-key  : The column in the lookup file to match against the data key"
+  echo "  n             : Keep the rows for which no match is found"
+  echo "  h             : print this help text"
+  echo ""
+}
+
+SEPARATOR=${CSV_UTILS_SEPARATOR:-,}
+LOOKUP_SEPARATOR=,
+
+LOOKUP_FILE_KEY=""
+LOOKUP_FILE=""
+DATA_FILE_KEY=""
+INVERT_SELECTION="no"
+while getopts "nhk:s:l:d:c:S:" opt
+do
+  case "$opt" in
+    h)
+      show_help
+      exit 0
+      ;;
+    s) SEPARATOR="$OPTARG"
+      ;;
+    S) LOOKUP_SEPARATOR="$OPTARG"
+      ;;
+    k) LOOKUP_FILE_KEY="$OPTARG"
+      ;;
+    l) LOOKUP_FILE="$OPTARG"
+      ;;
+    d) DATA_FILE_KEY="$OPTARG"
+      ;;
+    n) INVERT_SELECTION="yes"
+  esac
+done
+shift $((OPTIND-1))
+
+if [ "$LOOKUP_FILE_KEY" == "" ]
+then
+  >&2 echo "ERROR: Missing mandatory argument -k"
+  >&2 show_help
+  exit 1
+fi
+
+if [ "$DATA_FILE_KEY" == "" ]
+then
+  >&2 echo "ERROR: Missing mandatory argument -d"
+  >&2 show_help
+  exit 1
+fi
+
+if [ "$LOOKUP_FILE" == "" ]
+then
+  >&2 echo "ERROR: Missing mandatory argument -l"
+  >&2 show_help
+  exit 1
+fi
+
+awk -F $SEPARATOR -v "lookupSep=$LOOKUP_SEPARATOR" -v "lookupFileKey=$LOOKUP_FILE_KEY" -v "dataFileKey=$DATA_FILE_KEY" -v "invert=$INVERT_SELECTION" '
+FNR==1 {
+  if (FNR == NR) {
+    # cant use $i syntax, because lookupSep might not equal FS
+    numFields = split($0, fields, lookupSep)
+
+    # find the column to use as the lookup column
+    for (i=1; i<=numFields; i++) {
+      if (fields[i] == lookupFileKey) {
+        lookupFileColumn=i
+      }
+    }
+
+  } else {
+    # find the column index to lookup
+    for (i=1; i<=NF; i++) {
+      if ($i == dataFileKey) {
+        dataFileColumn=i
+      }
+    }
+
+    print $0
+  }
+}
+
+FNR!=1 {
+  if (FNR == NR) {
+    # cant use $i syntax, because lookupSep might not equal FS
+    numFields = split($0, fields, lookupSep)
+
+    # build up hashmap of values to keep
+    shouldKeep[fields[lookupFileColumn]] = "yes"
+  } else {
+    # if value in data-key is in hashmap, then print $0
+    found = (shouldKeep[$dataFileColumn] == "yes")
+    if (((invert == "no") && shouldKeep[$dataFileColumn] == "yes") || ((invert == "yes") && shouldKeep[$dataFileColumn] != "yes")) {
+      print $0
+    }
+  }
+}
+' $LOOKUP_FILE -

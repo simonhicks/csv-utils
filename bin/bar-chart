@@ -1,0 +1,163 @@
+#!/bin/bash
+
+show_help() {
+  echo ""
+  echo "USAGE: $(basename $0) [-h] [-s sep] [-w width] -l label-col -c value-col [-e ellide]"
+  echo ""
+  echo "  sep       : the field separator used in the input data"
+  echo "  width     : the width to display the bar chart (defaults to width of terminal)"
+  echo "  label-col : the column to use for the labels"
+  echo "  value-col : the column to use for the bar values"
+  echo "  ellide    : the number of characters to ellide from each bar (minimum 4)"
+  echo "  h         : show this help text"
+  echo ""
+}
+
+SEPARATOR=${CSV_UTILS_SEPARATOR:-,}
+ELLIDE=0
+NUM_COLS=`tput cols`
+
+while getopts "hs:e:l:c:w:" opt
+do
+  case "$opt" in
+    s) SEPARATOR="$OPTARG"
+      ;;
+    w) NUM_COLS="$OPTARG"
+      ;;
+    l) LABEL_COL="$OPTARG"
+      ;;
+    c) VALUE_COL="$OPTARG"
+      ;;
+    e) ELLIDE="$OPTARG"
+      ;;
+    h)
+      show_help
+      exit 0
+      ;;
+  esac
+done
+shift $((OPTIND-1))
+
+if [ "$LABEL_COL" == "" ]
+then
+  >&2 echo "ERROR: Missing mandatory argument -l"
+  >&2 show_help
+  exit 1
+fi
+
+if [ "$VALUE_COL" == "" ]
+then
+  >&2 echo "ERROR: Missing mandatory argument -c"
+  >&2 show_help
+  exit 1
+fi
+
+if [[ "$ELLIDE" != 0 && $ELLIDE -lt 4 ]]
+then
+  >&2 echo "ERROR: Invalid value of flag -e (minimum value is 4)"
+  >&2 show_help
+  exit 1
+fi
+
+awk -F $SEPARATOR -v width=$NUM_COLS -v labelColumnName=$LABEL_COL -v valueColumnName=$VALUE_COL -v "ellide=$ELLIDE" '
+NR==1 {
+  # figure out index of label and value columns
+  for (i=1; i<=NF; i++) {
+    if (labelColumnName == $i) {
+      labelColumn = i
+    } else if (valueColumnName == $i) {
+      valueColumn = i
+    }
+  }
+
+  lastBucket = 1
+  maxBucketLength = length($labelColumn)
+}
+
+NR==2 {
+  maxValue = $valueColumn
+  minValue = $valueColumn
+}
+
+NR!=1 {
+  labels[NR] = $labelColumn
+  values[NR] = $valueColumn
+  lastBucket = NR
+  if ($valueColumn > maxValue) {
+    maxValue = $valueColumn
+  } else if ($valueColumn < minValue) {
+    minValue = $valueColumn
+  }
+
+  labelLength = length($labelColumn)
+  if (labelLength > maxBucketLength) {
+    maxBucketLength = labelLength
+  }
+}
+
+END {
+  # this is the width (in characters) of the available space for printing labels
+  width = width - (3 + maxBucketLength)
+
+  printf("%s", labelColumnName)
+  for (j = 1; j <= (maxBucketLength - length(labelColumnName)); j++) {
+    printf("%s", " ")
+  }
+  printf(" | %s", valueColumnName)
+  print("")
+
+  for (j = 1; j <= maxBucketLength + 1; j++) {
+    printf("%s", "-")
+  }
+  printf("%s", "+")
+  for (j = 1; j <= width+1; j++) {
+    printf("%s", "-")
+  }
+  print("")
+
+  # this is the virtual space available for printing bars (incl. ellided space)
+  expandedWidth = width + ellide - 3
+
+  for (i=2; i<lastBucket; i++) {
+    label = labels[i]
+    printf("%s", label)
+    for (j = 1; j <= (maxBucketLength - length(label)); j++) {
+      printf("%s", " ")
+    }
+    printf("%s", " | ")
+
+    numSymbols = (values[i] / maxValue) * expandedWidth
+    if (ellide == 0) {
+      for (j = 1; j < numSymbols; j++) {
+        printf("%s", "*")
+      }
+      print("")
+    } else {
+      if (numSymbols < 3) {
+        for (j=1; j<numSymbols; j++) {
+          printf("%s", "*")
+        }
+      } else if (numSymbols > (3 + ellide)) {
+        # print 3 *s
+        for (j=1; j<=3; j++) {
+          printf("%s", "*")
+        }
+        # print 3 .s
+        for (j=1; j<=3; j++) {
+          printf("%s", ".")
+        }
+        # print (numSymbols - 3 - ellide) *s
+        for (j=1; j<=(numSymbols - 3 - ellide); j++) {
+          printf("%s", "*")
+        }
+      } else {
+        # print 3 *s
+        for (j=1; j<=3; j++) {
+          printf("%s", "*")
+        }
+      }
+      print("")
+    }
+  }
+}
+' -

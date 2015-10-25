@@ -256,6 +256,46 @@ date      location  format  amount  film                       description
 20150912  London    DVD     14.99   Frankenweenie              Someone bought Frankenweenie for £14.99
 ```
 
+### `keep`
+
+`keep` is used to provide set type operations. If you give it a lookup file, a column name from that
+file and a column name from the data file it will emit the rows from the data file for which the
+value in the data file column matches one of the values found in the lookup file column (in the
+lookup file).
+
+In other words, lets say you have a file called top-selling-films.csv containing the film id and
+total\_sales for that film. If you want to filter the sales data to only those films, you can do
+that as follows:
+
+```
+$ cat sales.csv | keep -l top-selling-films.csv -k film -d film | count
+1326
+```
+
+You can also pass the -n flag to invert the selection (i.e. filter out the matching rows).
+
+### `bar-chart`
+
+`bar-chart` is used to display simple bar charts. It will print 1 bar per row, using the value from
+the column passed to -l for the label, and the value from the column passed to -c for the bar
+length. By default it will use the entire width of your terminal, however you can override this with
+the -w flag
+
+```
+$ cat sales.csv | aggregate -g film -a sum -c amount | head -n 10 | enrich -l titles.csv -k id -d film | columns titles_title=title,sum_of_amount=total_sales | bar-chart -c total_sales -l title -w 100
+title                                  | total_sales
+---------------------------------------+------------------------------------------------------------
+The Many Adventures of Winnie the Pooh | *****************************************************
+The Rescuers                           | ******************************************
+The Fox and the Hound                  | ******************************************
+The Black Cauldron                     | *********************************************
+The Great Mouse Detective              | ************************************************
+Who Framed Roger Rabbit                | ***************************************************
+Oliver & Company                       | *******************************************************
+The Little Mermaid                     | ************************************************
+
+```
+
 ### Working with other field separators and quoted csvs
 
 All of these scripts can be configured to use a different field separator using the `-s` flag. You
@@ -295,8 +335,8 @@ These are just bash scripts, so all you have to do is clone this repo and add th
 These are things I'm planning to do soon (roughly in order)
 
 - **New actions**
-  - set operations (eg. keep only/remove records where x.foo appears in column y.bar)
   - visualisations (histogram, distribution, other?)
+  - add bucketing capability to aggregate
   - utilities for making terminating queries on a dataset (e.g. schema overview or summary widget in
     the thing)
   - pivot table (?)
