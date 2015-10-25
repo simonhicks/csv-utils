@@ -335,7 +335,8 @@ These are just bash scripts, so all you have to do is clone this repo and add th
 These are things I'm planning to do soon (roughly in order)
 
 - **New actions**
-  - visualisations (histogram, distribution, other?)
+  - make bar chart not depend on tput (i.e. if tput isn't there -w is mandatory)
+  - visualisations (more charts?)
   - add bucketing capability to aggregate
   - utilities for making terminating queries on a dataset (e.g. schema overview or summary widget in
     the thing)
