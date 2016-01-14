@@ -2,3 +2,4 @@ foo,bar,baz
 "foo1","bar1","baz1"
 "foo2","bar2","baz2"
 "foo 3","bar3","baz3"
+"foo, 4","bar3","baz3"
