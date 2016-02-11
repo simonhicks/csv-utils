@@ -11,6 +11,7 @@ repo.
 This is sales data for a fictional disney movie distributor with stores all around the world. The
 first 10 rows look like this:
 
+```
 date     | location | film | format | amount
 --------------------------------------------
 20150908 | Tokyo    | 78   | mp4    | 16.99
@@ -23,13 +24,14 @@ date     | location | film | format | amount
 20150930 | Tokyo    | 55   | VCR    | 17.99
 20150913 | Berlin   | 78   | DVD    | 16.99
 20150917 | Tokyo    | 33   | BluRay | 16.99
-
+```
 
 ### titles.csv
 
 This is a list of all the movies that the same distributor sells, along with some additional data.
 The first 10 rows look like this:
 
+```
 id | title                          | date     | studio                           | price
 -----------------------------------------------------------------------------------------
 58 | The Jungle Book 2              | 20030214 | DisneyToon Studios               | 14.99
@@ -42,6 +44,7 @@ id | title                          | date     | studio                         
 50 | The Emperor's New Groove       | 20001215 | Walt Disney                      | 18.99
 34 | The Nightmare Before Christmas | 19931029 | Touchstone Pictures [st 2]       | 18.99
 69 | Bambi II                       | 20060207 | DisneyToon Studios               | 17.99
+```
 
 ## Examples
 
