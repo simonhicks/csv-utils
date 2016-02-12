@@ -158,7 +158,7 @@ Walt Disney                       5199
 `count-by` supports grouping by a column (i.e. count the number of rows for each value of column X),
 unique counts (i.e. count the number of unique values there are in column X), grouped unique counts
 (i.e. count the number of unique values of column X there are in rows for each value of column Y)
-and of course plain 'ol counts (i.e. count the total number of rows)
+and of course plain ol' counts (i.e. count the total number of rows)
 
 ### `aggregate`
 
