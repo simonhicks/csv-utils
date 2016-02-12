@@ -130,10 +130,10 @@ date      location  format  amount  movie_title                      studio
 ...
 ```
 
-### `count`
+### `count-by`
 
-Now that you've got some joined up data, you can start doing some simple analysis. You can use `count`
-to see which studio is selling the most movies.
+Now that you've got some joined up data, you can start doing some simple analysis. You can use
+`count-by` to see which studio is selling the most movies.
 
 ```
 $ cat test/sales.csv | enrich -l titles.csv -k id -d film -c title=movie_title,studio | count-by -g studio | table
@@ -155,7 +155,7 @@ Walt Disney Television Animation  311
 Walt Disney                       5199
 ```
 
-`count` supports grouping by a column (i.e. count the number of rows for each value of column X),
+`count-by` supports grouping by a column (i.e. count the number of rows for each value of column X),
 unique counts (i.e. count the number of unique values there are in column X), grouped unique counts
 (i.e. count the number of unique values of column X there are in rows for each value of column Y)
 and of course plain 'ol counts (i.e. count the total number of rows)
