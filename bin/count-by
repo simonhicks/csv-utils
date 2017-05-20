@@ -6,7 +6,7 @@ show_help() {
   echo ""
   echo "  s sep          : the field separator used in the input data"
   echo "  g group-by-col : group the count by this column"
-  echo "  g unique-col   : count the unique values in this column"
+  echo "  u unique-col   : count the unique values in this column"
   echo "  h              : print this help text"
   echo ""
 }

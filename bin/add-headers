@@ -1,0 +1,31 @@
+#!/bin/bash
+
+show_help() {
+  echo ""
+  echo "USAGE: $(basename $0) [-h] columns"
+  echo ""
+  echo "  columns        : a comma seperated list of headers to add"
+  echo "  h              : print this help text"
+  echo ""
+}
+
+while getopts "h" opt
+do
+  case "$opt" in
+    h)
+      show_help
+      exit 0
+      ;;
+  esac
+done
+shift $((OPTIND-1))
+
+if [ "$1" == "" ]
+then
+  >&2 echo "ERROR: Missing mandatory argument columns"
+  >&2 show_help
+  exit 1
+fi
+
+echo $1
+cat

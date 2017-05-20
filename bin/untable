@@ -1,0 +1,31 @@
+#!/bin/sh
+
+show_help() {
+  echo ""
+  echo "USAGE: $(basename $0) [-h] [-w sep] [-s sep]"
+  echo ""
+  echo "  w sep          : the whitespace seperator used in the input table (default: \s)"
+  echo "  s sep          : the seperator to use in the output (default: ,)"
+  echo "  h              : print this help text"
+  echo ""
+}
+
+SEPARATOR=${CSV_UTILS_SEPARATOR:-,}
+WHITESPACE='\s'
+
+while getopts "hs:w:" opt
+do
+  case "$opt" in
+    h)
+      show_help
+      exit 0
+      ;;
+    s) SEPARATOR="$OPTARG"
+      ;;
+    w) WHITESPACE="$OPTARG"
+      ;;
+  esac
+done
+shift $((OPTIND-1))
+
+sed -e 's/^\s*//' -e 's/\s*$//' -e "s/${WHITESPACE}${WHITESPACE}*/${SEPARATOR}/g"
